@@ -90,9 +90,10 @@ function submitNames() {
   GameState.spouseName = spouseName;
   GameState.childName = childName;
 
-  // Update messages with new names
-  updateFamilyStatus();
-  updateRickyMessage();
+  // Regenerate messages with new names
+  GameState.allMessages = [];
+  GameState.nextMessageId = 0;
+  generateMessages(true);
 
   hideNameSelection();
   showTutorial();
