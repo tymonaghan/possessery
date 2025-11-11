@@ -12,21 +12,16 @@ function initUI() {
   if (loaded) {
     console.log('Loaded saved game');
     tutorialCompleted = true; // Skip tutorial for loaded games
+    renderView('home');
   } else {
     initGame();
     tutorialCompleted = false;
+    // Show name selection for new games
+    showNameSelection();
   }
 
   // Set up event listeners
   setupEventListeners();
-
-  // Show tutorial for new games
-  if (!tutorialCompleted && GameState.isFirstDay) {
-    showTutorial();
-  } else {
-    // Render initial view
-    renderView('home');
-  }
 }
 
 // Setup event listeners
@@ -68,6 +63,40 @@ function setupEventListeners() {
   document.getElementById('btn-tutorial-next').addEventListener('click', () => {
     nextTutorialStep();
   });
+
+  // Name selection continue button
+  document.getElementById('btn-name-continue').addEventListener('click', () => {
+    submitNames();
+  });
+}
+
+// Show name selection modal
+function showNameSelection() {
+  document.getElementById('name-modal').classList.remove('hidden');
+}
+
+// Hide name selection modal
+function hideNameSelection() {
+  document.getElementById('name-modal').classList.add('hidden');
+}
+
+// Submit names from form
+function submitNames() {
+  const playerName = document.getElementById('player-name').value.trim() || 'Sam';
+  const spouseName = document.getElementById('spouse-name').value.trim() || 'Alex';
+  const childName = document.getElementById('child-name').value.trim() || 'Maya';
+
+  GameState.playerName = playerName;
+  GameState.spouseName = spouseName;
+  GameState.childName = childName;
+
+  // Regenerate messages with new names
+  GameState.allMessages = [];
+  GameState.nextMessageId = 0;
+  generateMessages(true);
+
+  hideNameSelection();
+  showTutorial();
 }
 
 // Show tutorial modal
@@ -191,34 +220,119 @@ function renderOffice() {
   officeEl.innerHTML = html;
 }
 
-// Render messages (texts and mail)
+// Render unified message feed
 function renderMessages() {
-  // Family messages
-  const messagesEl = document.getElementById('family-messages');
-  let html = `<h4>Text Messages</h4>`;
+  const messagesListEl = document.getElementById('messages-list');
+  let html = '';
 
-  if (GameState.familyStatus === 'divorced') {
-    html += `<div class="message message-cold">${GameState.currentFamilyMessage}</div>`;
-  } else if (GameState.familyStatus === 'separated') {
-    html += `<div class="message message-distant">${GameState.currentFamilyMessage}</div>`;
-  } else if (GameState.familyStatus === 'strained') {
-    html += `<div class="message message-strained">${GameState.currentFamilyMessage}</div>`;
-  } else {
-    html += `<div class="message message-warm">${GameState.currentFamilyMessage}</div>`;
+  // Filter out dismissed messages
+  const visibleMessages = GameState.allMessages.filter(m => !m.dismissed);
+
+  // Show messages in chronological order (oldest to newest)
+  for (const msg of visibleMessages) {
+    let messageClass = 'message';
+    let senderClass = '';
+
+    // Style based on message type
+    if (msg.type === 'ricky') {
+      messageClass += ' message-ricky';
+      senderClass = 'sender-ricky';
+    } else if (msg.type === 'family') {
+      if (msg.familyStatus === 'divorced') {
+        messageClass += ' message-cold';
+      } else if (msg.familyStatus === 'separated') {
+        messageClass += ' message-distant';
+      } else if (msg.familyStatus === 'strained') {
+        messageClass += ' message-strained';
+      } else {
+        messageClass += ' message-warm';
+      }
+      senderClass = 'sender-family';
+    } else if (msg.type === 'bill') {
+      const billStage = getBillStage(msg);
+      if (msg.paid) {
+        messageClass += ' message-bill-paid';
+      } else {
+        messageClass += ' message-bill';
+        // Add urgency class
+        if (billStage === 'final') messageClass += ' bill-final';
+        else if (billStage === 'overdue') messageClass += ' bill-overdue';
+        else if (billStage === 'due') messageClass += ' bill-due';
+      }
+      senderClass = 'sender-bill';
+    } else if (msg.type === 'legal') {
+      messageClass += ' message-legal';
+      senderClass = 'sender-legal';
+    }
+
+    html += `<div class="${messageClass}" data-message-id="${msg.id}">`;
+
+    // Add dismiss button for non-bill messages or paid bills
+    const canDismiss = msg.type !== 'bill' || msg.paid;
+    if (canDismiss) {
+      html += `<button class="btn-dismiss" data-message-id="${msg.id}" title="Dismiss">×</button>`;
+    }
+
+    html += `<div class="message-sender ${senderClass}">${msg.sender}</div>`;
+
+    // Add bill stage prefix to text
+    let displayText = msg.text;
+    if (msg.type === 'bill' && !msg.paid) {
+      const billStage = getBillStage(msg);
+      if (billStage === 'final') {
+        displayText = `🚨 FINAL NOTICE: ${msg.text}`;
+      } else if (billStage === 'overdue') {
+        displayText = `⚠️ OVERDUE: ${msg.text}`;
+      } else if (billStage === 'due') {
+        displayText = `⏰ DUE: ${msg.text}`;
+      }
+    }
+
+    html += `<div class="message-text">${displayText}</div>`;
+
+    // Add pay button for unpaid bills
+    if (msg.type === 'bill' && !msg.paid) {
+      const canAfford = GameState.money >= msg.amount;
+      const buttonClass = canAfford ? 'btn-pay' : 'btn-pay-disabled';
+      html += `<button class="${buttonClass}" data-message-id="${msg.id}" data-amount="${msg.amount}" ${!canAfford ? 'disabled' : ''}>Pay $${msg.amount}</button>`;
+    } else if (msg.type === 'bill' && msg.paid) {
+      html += `<div class="bill-paid-label">✓ PAID</div>`;
+    }
+
+    html += `</div>`;
   }
 
-  messagesEl.innerHTML = html;
-
-  // Mail
-  const mailEl = document.getElementById('mail');
-  html = `<h4>Mail</h4>`;
-
-  for (const item of GameState.currentMail) {
-    const itemClass = item.type === 'legal' ? 'mail-legal' : 'mail-bill';
-    html += `<div class="mail-item ${itemClass}">• ${item.text}</div>`;
+  if (visibleMessages.length === 0) {
+    html = '<p class="no-messages">No messages yet...</p>';
   }
 
-  mailEl.innerHTML = html;
+  messagesListEl.innerHTML = html;
+
+  // Add event listeners for pay buttons
+  document.querySelectorAll('.btn-pay').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const messageId = parseInt(e.target.dataset.messageId);
+      if (payBill(messageId)) {
+        renderHomeView(); // Re-render to update money and button state
+      }
+    });
+  });
+
+  // Add event listeners for dismiss buttons
+  document.querySelectorAll('.btn-dismiss').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const messageId = parseInt(e.target.dataset.messageId);
+      if (dismissMessage(messageId)) {
+        renderHomeView(); // Re-render to remove dismissed message
+      }
+    });
+  });
+
+  // Auto-scroll to bottom to show newest messages
+  const messagesFeed = document.getElementById('messages-feed');
+  if (messagesFeed) {
+    messagesFeed.scrollTop = messagesFeed.scrollHeight;
+  }
 }
 
 // Render consequences
@@ -250,11 +364,12 @@ function renderJobsView() {
   document.getElementById('jobs-day').textContent = `Day ${GameState.day}`;
 
   const jobsListEl = document.getElementById('jobs-list');
+  const isSolo = GameState.employees.length === 0;
   let html = '';
 
   for (const job of GameState.availableJobs) {
     const isSelected = GameState.selectedJobs.includes(job);
-    const isFullyAssigned = job.assignedEmployee && job.assignedEquipment;
+    const isFullyAssigned = isSolo ? job.assignedEquipment : (job.assignedEmployee && job.assignedEquipment);
 
     html += `<div class="job-card ${isSelected ? 'job-selected' : ''}" data-job-id="${job.id}">`;
     html += `<div class="job-header">`;
@@ -278,21 +393,26 @@ function renderJobsView() {
     if (isSelected) {
       html += `<div class="job-assignment">`;
 
-      // Employee dropdown
-      html += `<select class="employee-select" data-job-id="${job.id}">`;
-      html += `<option value="">Select Employee</option>`;
+      // Only show employee dropdown if we have employees
+      if (!isSolo) {
+        html += `<select class="employee-select" data-job-id="${job.id}">`;
+        html += `<option value="">Select Employee</option>`;
 
-      const availableEmployees = getAvailableEmployees();
-      // Add currently assigned employee even if not available
-      if (job.assignedEmployee) {
-        availableEmployees.push(job.assignedEmployee);
-      }
+        const availableEmployees = getAvailableEmployees();
+        // Add currently assigned employee even if not available
+        if (job.assignedEmployee) {
+          availableEmployees.push(job.assignedEmployee);
+        }
 
-      for (const emp of availableEmployees) {
-        const selected = job.assignedEmployee && job.assignedEmployee.id === emp.id ? 'selected' : '';
-        html += `<option value="${emp.id}" ${selected}>${emp.name} (${emp.skill}, $${emp.cost}/day)</option>`;
+        for (const emp of availableEmployees) {
+          const selected = job.assignedEmployee && job.assignedEmployee.id === emp.id ? 'selected' : '';
+          html += `<option value="${emp.id}" ${selected}>${emp.name} (${emp.skill}, $${emp.cost}/day)</option>`;
+        }
+        html += `</select>`;
+      } else {
+        // Solo operator - show "You" as operator
+        html += `<div class="solo-operator">👤 You (Solo Operator)</div>`;
       }
-      html += `</select>`;
 
       // Equipment dropdown
       html += `<select class="equipment-select" data-job-id="${job.id}">`;
@@ -333,13 +453,19 @@ function setupJobsEventListeners() {
     checkbox.addEventListener('change', (e) => {
       const jobId = e.target.dataset.jobId;
       const job = GameState.availableJobs.find(j => j.id === jobId);
+      const isSolo = GameState.employees.length === 0;
+      const maxJobs = isSolo ? 1 : 4;
 
       if (e.target.checked) {
-        if (GameState.selectedJobs.length < 4) {
+        if (GameState.selectedJobs.length < maxJobs) {
           GameState.selectedJobs.push(job);
         } else {
           e.target.checked = false;
-          alert('You can only select up to 4 jobs per day!');
+          if (isSolo) {
+            alert('As a solo operator, you can only handle 1 job per day!');
+          } else {
+            alert('You can only select up to 4 jobs per day!');
+          }
         }
       } else {
         const index = GameState.selectedJobs.indexOf(job);
@@ -396,10 +522,23 @@ function setupJobsEventListeners() {
 function updateJobsFooter() {
   const selectedCount = GameState.selectedJobs.length;
   const dailyCosts = calculateDailyCosts();
-  const fullyAssigned = GameState.selectedJobs.filter(j => j.assignedEmployee && j.assignedEquipment).length;
+  const isSolo = GameState.employees.length === 0;
+
+  // Solo operators only need equipment, employees need both employee and equipment
+  const fullyAssigned = isSolo
+    ? GameState.selectedJobs.filter(j => j.assignedEquipment).length
+    : GameState.selectedJobs.filter(j => j.assignedEmployee && j.assignedEquipment).length;
 
   document.getElementById('selected-count').textContent = selectedCount;
   document.getElementById('daily-costs').textContent = `$${dailyCosts}`;
+
+  // Update hint text
+  const hintEl = document.querySelector('.footer-hint');
+  if (isSolo) {
+    hintEl.textContent = 'Select 1 job (solo operator)';
+  } else {
+    hintEl.textContent = 'Select 1-4 jobs for today';
+  }
 
   const goButton = document.getElementById('btn-go-to-work');
   if (fullyAssigned === selectedCount && selectedCount > 0) {

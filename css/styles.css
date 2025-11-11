@@ -181,6 +181,38 @@ button {
   font-size: 0.9em;
 }
 
+/* Name Selection Form */
+.name-form {
+  margin: 30px 0;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  color: #2a9d8f;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  background: #1a1a1a;
+  border: 2px solid #333;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  font-size: 1em;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #2a9d8f;
+}
+
 .tutorial-footer {
   margin-top: 30px;
   text-align: center;
@@ -300,58 +332,258 @@ button {
   gap: 20px;
 }
 
+/* Unified Messages Feed */
 .info-panel {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: 20px;
 }
 
-.mail-panel, .messages-panel {
+.messages-feed {
+  flex: 1;
   background: #222;
   border: 2px solid #333;
   padding: 20px;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
 }
 
-.mail-panel h4, .messages-panel h4 {
+.messages-feed h4 {
   color: #2a9d8f;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  flex-shrink: 0;
 }
 
-.mail-item {
-  padding: 5px 0;
-  color: #ccc;
+.messages-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 10px;
 }
 
-.mail-legal {
-  color: #e76f51;
-  font-weight: bold;
+.messages-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.messages-list::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+.messages-list::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+.messages-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.no-messages {
+  color: #666;
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
 }
 
 .message {
-  padding: 10px;
+  padding: 12px;
   background: #2a2a2a;
   border-left: 3px solid #2a9d8f;
-  margin-top: 10px;
+  margin-bottom: 12px;
+  border-radius: 4px;
+  position: relative;
 }
 
+.message-sender {
+  font-weight: bold;
+  font-size: 0.85em;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sender-ricky {
+  color: #4a90e2;
+}
+
+.sender-family {
+  color: #2a9d8f;
+}
+
+.sender-bill {
+  color: #e9c46a;
+}
+
+.sender-legal {
+  color: #e76f51;
+}
+
+.message-text {
+  color: #e0e0e0;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+/* Message type styles */
 .message-warm {
   border-left-color: #2a9d8f;
-  color: #e0e0e0;
 }
 
 .message-strained {
   border-left-color: #e9c46a;
+}
+
+.message-strained .message-text {
   color: #ddd;
 }
 
 .message-distant {
   border-left-color: #f4a261;
+}
+
+.message-distant .message-text {
   color: #aaa;
 }
 
 .message-cold {
   border-left-color: #e76f51;
+}
+
+.message-cold .message-text {
   color: #888;
+}
+
+.message-ricky {
+  border-left-color: #4a90e2;
+  background: #252a35;
+}
+
+.message-bill {
+  border-left-color: #e9c46a;
+  background: #2a2823;
+}
+
+.message-bill-paid {
+  border-left-color: #555;
+  background: #252525;
+  opacity: 0.6;
+}
+
+.message-legal {
+  border-left-color: #e76f51;
+  background: #2a2323;
+}
+
+/* Bill payment buttons */
+.btn-pay {
+  background: #2a9d8f;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background 0.3s;
+  margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-pay:hover {
+  background: #238276;
+}
+
+.btn-pay-disabled {
+  background: #444;
+  color: #888;
+  border: none;
+  padding: 8px 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  cursor: not-allowed;
+  border-radius: 3px;
+  margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bill-paid-label {
+  color: #666;
+  font-size: 0.85em;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+/* Dismiss button */
+.btn-dismiss {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: #666;
+  font-size: 1.5em;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.btn-dismiss:hover {
+  background: #444;
+  color: #e0e0e0;
+}
+
+/* Bill urgency stages */
+.bill-due {
+  border-left-color: #f4a261 !important;
+  background: #2a2620 !important;
+}
+
+.bill-overdue {
+  border-left-color: #e76f51 !important;
+  background: #2a2220 !important;
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+.bill-final {
+  border-left-color: #d62828 !important;
+  background: #2a1818 !important;
+  animation: pulse-urgent 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+@keyframes pulse-urgent {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.01);
+  }
+}
+
+/* Solo Operator Display */
+.solo-operator {
+  padding: 10px;
+  background: #2a2a2a;
+  border: 2px solid #2a9d8f;
+  color: #2a9d8f;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
 }
 
 /* Consequences */

@@ -6,6 +6,11 @@ const GameState = {
   day: 1,
   act: 1,
 
+  // Player info
+  playerName: '',
+  spouseName: '',
+  childName: '',
+
   // Progression tracking
   successfulRepos: 0,
   totalEarned: 0,
@@ -30,32 +35,32 @@ const GameState = {
   displayedConsequences: [],
 
   // Messages
-  currentFamilyMessage: '',
-  currentMail: [],
+  allMessages: [], // Unified message feed
+  nextMessageId: 0,
 
   // Tutorial
-  isFirstDay: true
+  isFirstDay: true,
+  rickyMessagesSeen: 0
 };
 
 // Initialize game
 function initGame() {
-  // Start with basic employees
-  GameState.employees = [...EMPLOYEES.starter];
+  // Start solo - no employees!
+  GameState.employees = [];
+  // Just the basic tow truck
   GameState.equipment = [...EQUIPMENT.starter];
 
-  // Generate first set of jobs
+  // Generate first set of jobs (solo = 1 job)
   generateDailyJobs();
 
-  // Set first family message
-  updateFamilyStatus();
-
-  // Generate mail
-  generateMail();
+  // Generate initial messages
+  generateMessages(true);
 }
 
 // Generate daily jobs
 function generateDailyJobs() {
-  const jobCount = 6;
+  // Solo operator gets 1 job per day, hired staff increases this
+  const jobCount = Math.max(1, GameState.employees.length);
   GameState.availableJobs = [];
 
   const templateKeys = Object.keys(JOB_TEMPLATES);
@@ -104,9 +109,15 @@ function calculateJobSuccess(job, employee, equipment) {
   // Base success chance from difficulty
   let successChance = 1.0 - (job.difficulty * 0.15); // 85% at diff 1, 25% at diff 5
 
-  // Employee skill bonus
-  const skillMatch = employee.skill === job.requiredSkill ? 0.2 : 0.1;
-  successChance += (employee.skillLevel * 0.05) + skillMatch;
+  // Employee skill bonus (or solo operator - no bonus)
+  if (employee) {
+    const skillMatch = employee.skill === job.requiredSkill ? 0.2 : 0.1;
+    successChance += (employee.skillLevel * 0.05) + skillMatch;
+  } else {
+    // Solo operator - slight penalty but you learn as you go
+    const experienceBonus = Math.min(0.15, GameState.successfulRepos * 0.01);
+    successChance += experienceBonus;
+  }
 
   // Equipment bonus
   successChance += equipment.bonus;
@@ -132,7 +143,7 @@ function resolveJob(job) {
     success: success,
     payout: success ? job.payout : 0,
     message: success ? template.successMessage : template.failureMessage,
-    employee: employee.name,
+    employee: employee ? employee.name : 'You',
     equipment: equipment.name
   };
 
@@ -203,8 +214,10 @@ function executeDay() {
       GameState.failedRepos++;
     }
 
-    // Subtract employee cost
-    dailyCost += job.assignedEmployee.cost;
+    // Subtract employee cost (if you have employees)
+    if (job.assignedEmployee) {
+      dailyCost += job.assignedEmployee.cost;
+    }
 
     // Subtract equipment rental cost (if not owned)
     if (!job.assignedEquipment.owned) {
@@ -220,11 +233,8 @@ function executeDay() {
   // Update office level
   updateOfficeLevel();
 
-  // Update family status
-  updateFamilyStatus();
-
-  // Generate new mail
-  generateMail();
+  // Generate new messages
+  generateMessages();
 
   // Advance day
   GameState.day++;
@@ -280,33 +290,136 @@ function updateFamilyStatus() {
 
   GameState.familyStatus = newStatus;
   GameState.act = newAct;
-
-  // Update family message
-  const messages = FAMILY_MESSAGES[newStatus];
-  GameState.currentFamilyMessage = messages[Math.floor(Math.random() * messages.length)];
 }
 
-// Generate mail for current act
-function generateMail() {
-  let mailPool = [];
-  if (GameState.act === 1) {
-    mailPool = MAIL_ITEMS.act1;
-  } else if (GameState.act === 2) {
-    mailPool = MAIL_ITEMS.act2;
+// Generate unified message feed
+function generateMessages(isFirstDay = false) {
+  const newMessages = [];
+
+  // Update family status first
+  updateFamilyStatus();
+
+  // 1. Add Ricky message
+  let rickyPool = [];
+  if (GameState.day === 1) {
+    rickyPool = RICKY_MESSAGES.start;
+  } else if (GameState.employees.length === 0) {
+    rickyPool = RICKY_MESSAGES.solo;
+  } else if (GameState.officeLevel >= 3) {
+    rickyPool = RICKY_MESSAGES.growth;
+  } else if (GameState.familyStatus === 'strained' || GameState.familyStatus === 'separated') {
+    rickyPool = RICKY_MESSAGES.concern;
   } else {
-    mailPool = MAIL_ITEMS.act3;
+    rickyPool = RICKY_MESSAGES.general;
   }
 
-  // Select 2-3 random mail items
-  const count = Math.floor(Math.random() * 2) + 2;
-  GameState.currentMail = [];
+  let rickyText = rickyPool[Math.floor(Math.random() * rickyPool.length)];
+  rickyText = rickyText.replace(/{name}/g, GameState.playerName || 'cuz');
 
-  for (let i = 0; i < count && i < mailPool.length; i++) {
-    const item = mailPool[Math.floor(Math.random() * mailPool.length)];
-    if (!GameState.currentMail.find(m => m.text === item.text)) {
-      GameState.currentMail.push(item);
+  newMessages.push({
+    id: GameState.nextMessageId++,
+    sender: 'Ricky',
+    text: rickyText,
+    type: 'ricky',
+    dismissed: false,
+    day: GameState.day
+  });
+
+  // 2. Add family message
+  const familyMessages = FAMILY_MESSAGES[GameState.familyStatus];
+  let familyText = familyMessages[Math.floor(Math.random() * familyMessages.length)];
+  familyText = familyText.replace(/{child}/g, GameState.childName || 'Maya');
+  familyText = familyText.replace(/{spouse}/g, GameState.spouseName || 'Alex');
+
+  newMessages.push({
+    id: GameState.nextMessageId++,
+    sender: GameState.spouseName || 'Alex',
+    text: familyText,
+    type: 'family',
+    familyStatus: GameState.familyStatus,
+    dismissed: false,
+    day: GameState.day
+  });
+
+  // 3. Add bills (increasing frequency with act progression)
+  const billPool = BILL_MESSAGES[`act${GameState.act}`];
+  const billChance = GameState.act === 1 ? 0.4 : GameState.act === 2 ? 0.6 : 0.8;
+
+  // On first day, always add 1-2 bills. Otherwise use chance-based
+  const numBills = isFirstDay ? Math.floor(Math.random() * 2) + 1 :
+    (Math.random() < billChance ? Math.floor(Math.random() * 2) + 1 : 0);
+
+  for (let i = 0; i < numBills && billPool.length > 0; i++) {
+    const bill = billPool[Math.floor(Math.random() * billPool.length)];
+    newMessages.push({
+      id: GameState.nextMessageId++,
+      sender: bill.sender,
+      text: bill.text,
+      type: 'bill',
+      amount: bill.amount,
+      paid: false,
+      dismissed: false,
+      issueDay: GameState.day,
+      day: GameState.day
+    });
+  }
+
+  // 4. Add legal messages (act 2 & 3 only, low chance)
+  if (GameState.act >= 2 && Math.random() < 0.3) {
+    const legalPool = LEGAL_MESSAGES[`act${GameState.act}`];
+    if (legalPool && legalPool.length > 0) {
+      const legal = legalPool[Math.floor(Math.random() * legalPool.length)];
+      let legalText = legal.text.replace(/{spouse}/g, GameState.spouseName || 'Alex');
+
+      newMessages.push({
+        id: GameState.nextMessageId++,
+        sender: legal.sender,
+        text: legalText,
+        type: 'legal',
+        dismissed: false,
+        day: GameState.day
+      });
     }
   }
+
+  // Add new messages to the feed (keep last 20 messages)
+  GameState.allMessages.push(...newMessages);
+  if (GameState.allMessages.length > 20) {
+    GameState.allMessages = GameState.allMessages.slice(-20);
+  }
+}
+
+// Pay a bill
+function payBill(messageId) {
+  const message = GameState.allMessages.find(m => m.id === messageId);
+  if (message && message.type === 'bill' && !message.paid && GameState.money >= message.amount) {
+    GameState.money -= message.amount;
+    message.paid = true;
+    return true;
+  }
+  return false;
+}
+
+// Dismiss a message
+function dismissMessage(messageId) {
+  const message = GameState.allMessages.find(m => m.id === messageId);
+  if (message) {
+    message.dismissed = true;
+    return true;
+  }
+  return false;
+}
+
+// Get bill stage based on days unpaid
+function getBillStage(bill) {
+  if (bill.paid) return 'paid';
+
+  const daysUnpaid = GameState.day - bill.issueDay;
+
+  if (daysUnpaid >= 7) return 'final';      // 7+ days: FINAL NOTICE
+  if (daysUnpaid >= 4) return 'overdue';    // 4-6 days: OVERDUE
+  if (daysUnpaid >= 2) return 'due';        // 2-3 days: DUE
+  return 'ready';                            // 0-1 days: Ready to pay
 }
 
 // Save game to localStorage
@@ -343,6 +456,9 @@ function resetGame() {
   GameState.money = 1500;
   GameState.day = 1;
   GameState.act = 1;
+  GameState.playerName = '';
+  GameState.spouseName = '';
+  GameState.childName = '';
   GameState.successfulRepos = 0;
   GameState.totalEarned = 0;
   GameState.complaintsReceived = 0;
@@ -356,9 +472,10 @@ function resetGame() {
   GameState.dayResults = [];
   GameState.pendingConsequences = [];
   GameState.displayedConsequences = [];
-  GameState.currentFamilyMessage = '';
-  GameState.currentMail = [];
+  GameState.allMessages = [];
+  GameState.nextMessageId = 0;
   GameState.isFirstDay = true;
+  GameState.rickyMessagesSeen = 0;
 
   initGame();
 }
@@ -385,9 +502,11 @@ function getAvailableEquipment() {
 function calculateDailyCosts() {
   let total = 0;
   for (const job of GameState.selectedJobs) {
+    // Only count employee cost if job has an employee assigned
     if (job.assignedEmployee) {
       total += job.assignedEmployee.cost;
     }
+    // Equipment rental cost (if not owned)
     if (job.assignedEquipment && !job.assignedEquipment.owned) {
       total += job.assignedEquipment.cost;
     }

@@ -376,89 +376,146 @@ const FAMILY_MESSAGES = {
   together: [
     "How was your day?",
     "Love you",
-    "Maya wants to show you her drawing when you get home",
+    "{child} wants to show you her drawing when you get home",
     "Dinner at 7?",
     "Don't forget we have plans this weekend",
-    "Maya got an A on her test!",
+    "{child} got an A on her test!",
     "Hope work is going well"
   ],
   strained: [
     "Working late again?",
     "ok",
     "fine",
-    "Maya asked when you're coming home",
+    "{child} asked when you're coming home",
     "We need to talk",
     "You missed dinner again",
     "Are you even reading these?"
   ],
   separated: [
-    "Maya's recital was today.",
+    "{child}'s recital was today.",
     "Forgot to call on her birthday?",
     "Lawyer wants to schedule a call",
     "Please just sign the papers",
-    "Maya asks about you",
+    "{child} asks about you",
     "Child support payment received",
-    "Forwarding: Maya's school event"
+    "Forwarding: {child}'s school event"
   ],
   divorced: [
-    "Forwarding: Medical bill for Maya",
+    "Forwarding: Medical bill for {child}",
     "Child support due Friday",
-    "Maya's school schedule attached",
+    "{child}'s school schedule attached",
     "Please confirm pickup time",
     ".",
     "Payment received"
   ]
 };
 
-const MAIL_ITEMS = {
+const RICKY_MESSAGES = {
+  start: [
+    "Hey {name}! Welcome to the biz. I know it ain't glamorous but trust me, there's money in this. You'll be fine!",
+    "Yo {name}, Ricky here. First day! Don't worry too much about it. Just hook it up and drive away lol. You got this.",
+    "What's up {name}! So glad you decided to give this a shot. Easiest money I ever made. Just remember - you're helping the bank, not hurting people. That's what I tell myself anyway 😅"
+  ],
+  solo: [
+    "How you holding up {name}? Flying solo is tough but you're building something. Keep at it!",
+    "Yo! Made any money yet? Remember, repo game is all about volume when you're solo. Get in, get out, get paid.",
+    "You still doing this yourself? Damn {name}, you're tougher than I thought! But fr maybe think about hiring someone soon?",
+    "Hey {name}, saw a sweet Camaro on the list today. Wish I could grab it but I'm slammed. You should jump on it!",
+    "Coffee this weekend? Wanna hear how it's going. My treat!",
+    "Just remember {name} - you're not the bad guy here. They stopped paying. You're just doing a job.",
+    "Yo did you see that thing on the news? Wild. Anyway how's business?"
+  ],
+  growth: [
+    "Yooo {name}! Heard you got employees now! Look at you, boss status! 💪",
+    "Damn {name}, you're really building something here. I'm proud of you cuz!",
+    "Hey big shot! Don't forget about your cousin Ricky when you make it big lol",
+    "You hiring? Jk jk. But seriously you're killing it {name}!",
+    "Remember when you were nervous about your first repo? Look at you now!"
+  ],
+  concern: [
+    "Hey {name}... you doing okay? Been seeing you work a lot. Everything good at home?",
+    "Yo just checking in. You seem stressed lately. Want to grab a beer?",
+    "I know this job can be rough on relationships {name}. Just... take care of yourself okay?",
+    "Not trying to pry but if you need to talk I'm here. Family first, even if it's just us cousins.",
+    "Hey. Heard some stuff. You good? Hit me up if you need anything."
+  ],
+  general: [
+    "What's up {name}! Just checking in. How's the repo life treating you?",
+    "Yo! Got any good stories? This job always has crazy moments lol",
+    "Hey {name}, you catch the game last night? Insane ending!",
+    "Just wanted to say thanks for taking my advice on this gig. Glad it's working out!",
+    "Yo {name} you around this weekend? BBQ at my place",
+    "How's the family? Give them my best!",
+    "Remember - cash is king baby! Keep grinding!"
+  ]
+};
+
+const BILL_MESSAGES = {
   act1: [
-    { type: 'bill', text: 'Electric Bill: $85' },
-    { type: 'bill', text: 'Water Bill: $45' },
-    { type: 'bill', text: 'Internet Bill: $60' },
-    { type: 'bill', text: 'Car Insurance: $120' }
+    { sender: 'Electric Company', text: 'Your electric bill is due', amount: 85, paid: false },
+    { sender: 'Water Dept', text: 'Water bill - payment required', amount: 45, paid: false },
+    { sender: 'Internet Provider', text: 'Monthly internet service due', amount: 60, paid: false },
+    { sender: 'Insurance Co', text: 'Car insurance premium due', amount: 120, paid: false },
+    { sender: 'Gas Company', text: 'Natural gas bill enclosed', amount: 55, paid: false },
+    { sender: 'Phone Company', text: 'Your phone bill is ready', amount: 75, paid: false }
   ],
   act2: [
-    { type: 'bill', text: 'Electric Bill: $85' },
-    { type: 'bill', text: 'Medical Bill: $850' },
-    { type: 'legal', text: 'Legal Notice: Custody Hearing' },
-    { type: 'bill', text: 'Car Insurance: $120' }
+    { sender: 'Electric Company', text: 'PAST DUE - Electric bill', amount: 85, paid: false },
+    { sender: 'Medical Billing', text: 'Outstanding medical balance', amount: 850, paid: false },
+    { sender: 'Law Office', text: 'Legal retainer required', amount: 500, paid: false },
+    { sender: 'Insurance Co', text: 'Car insurance - URGENT', amount: 120, paid: false },
+    { sender: 'Credit Card', text: 'Minimum payment due', amount: 250, paid: false },
+    { sender: 'Landlord', text: 'Rent payment reminder', amount: 950, paid: false }
   ],
   act3: [
-    { type: 'legal', text: 'Divorce Papers (Final)' },
-    { type: 'bill', text: 'Child Support: $800/mo' },
-    { type: 'bill', text: 'Apartment Rent: $950' },
-    { type: 'bill', text: 'Car Insurance: $120' }
+    { sender: 'Divorce Attorney', text: 'Final legal fees due', amount: 1200, paid: false },
+    { sender: 'Child Support', text: 'Monthly child support payment', amount: 800, paid: false },
+    { sender: 'Landlord', text: 'Apartment rent due', amount: 950, paid: false },
+    { sender: 'Insurance Co', text: 'Car insurance premium', amount: 120, paid: false },
+    { sender: 'Credit Card', text: 'OVERDUE - Pay immediately', amount: 450, paid: false },
+    { sender: 'Electric Company', text: 'Disconnect notice', amount: 175, paid: false }
+  ]
+};
+
+const LEGAL_MESSAGES = {
+  act2: [
+    { sender: 'Family Court', text: 'Custody hearing scheduled for next month', type: 'legal' },
+    { sender: '{spouse}', text: 'Lawyer sent me the papers. Please look at them.', type: 'legal' }
+  ],
+  act3: [
+    { sender: 'Family Court', text: 'Divorce finalized. Documents attached.', type: 'legal' },
+    { sender: 'Child Services', text: 'Visitation schedule update', type: 'legal' }
   ]
 };
 
 const TUTORIAL_STEPS = [
   {
     title: "Welcome to POSSESSION",
-    content: "You've just started your own repossession company. Times are tough, but there's money to be made in the repo business. Your goal? Build an empire from the ground up."
+    content: "Your cousin Ricky got you into the repo business. You're starting as a solo operator - just you, a tow truck, and whatever jobs you can handle. Times are tough, but there's money to be made."
   },
   {
     title: "How It Works",
-    content: "Each day, you'll receive a list of repo jobs from creditors. Vehicles that are behind on payments and need to be recovered. You select which jobs to take, assign your team, and complete the work."
+    content: "Each day, you'll get repo jobs from creditors. Vehicles behind on payments that need to be recovered. As a solo operator, you can only handle <strong>1 job per day</strong>. Choose wisely!"
   },
   {
-    title: "Selecting Jobs",
-    content: "You can choose <strong>1 to 4 jobs per day</strong>. You don't have to take all 4! Start small if you want. Each job shows the difficulty (★ rating) and potential payout. Higher difficulty = higher reward, but lower success chance."
+    title: "Selecting Your Job",
+    content: "Pick the job that looks manageable. Each job shows the difficulty (★ rating) and potential payout. Higher difficulty = more money, but lower success chance. As you gain experience, you'll get better at this."
   },
   {
-    title: "Assigning Resources",
-    content: "For each job you select, assign an <strong>employee</strong> and <strong>equipment</strong>. Match employee skills (negotiator, investigator, intimidator) to the job type for better success rates. Better equipment increases your odds."
+    title: "Equipment Matters",
+    content: "Select your <strong>equipment</strong> for the job. You start with a basic tow truck. Better equipment increases your success rate. You can rent better gear or buy your own as you earn money."
   },
   {
     title: "Results & Growth",
-    content: "Hit 'Go to Work' to execute all your jobs. You'll see which succeeded and which failed. Successful repos earn money (minus daily overhead costs). Use your earnings to upgrade your office and equipment!"
+    content: "Hit 'Go to Work' to start your day. You'll see if you succeeded or failed. Successful repos earn money (minus equipment rental costs). Save up to hire employees and expand!"
   },
   {
     title: "Build Your Empire",
-    content: "Complete more repos, earn more money, unlock better upgrades. Watch your office transform from a folding table to a corporate powerhouse. Ready to get started?"
+    content: "Complete repos, earn money, hire employees, upgrade your office. Eventually you can hire staff and take on multiple jobs per day. But for now? It's just you. Good luck out there!"
   }
 ];
 
 // Export for use in game.js
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { EMPLOYEES, EQUIPMENT, JOB_TEMPLATES, STREETS, OFFICE_UPGRADES, FAMILY_MESSAGES, MAIL_ITEMS, TUTORIAL_STEPS };
+  module.exports = { EMPLOYEES, EQUIPMENT, JOB_TEMPLATES, STREETS, OFFICE_UPGRADES, FAMILY_MESSAGES, RICKY_MESSAGES, BILL_MESSAGES, LEGAL_MESSAGES, TUTORIAL_STEPS };
 }

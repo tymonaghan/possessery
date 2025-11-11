@@ -16,6 +16,33 @@
       </div>
     </header>
 
+    <!-- Name Selection Modal -->
+    <div id="name-modal" class="tutorial-modal hidden">
+      <div class="tutorial-content">
+        <div class="tutorial-step">
+          <h2>Welcome to POSSESSION</h2>
+          <p>Before you start, let's set up your story...</p>
+          <div class="name-form">
+            <div class="form-group">
+              <label for="player-name">Your Name:</label>
+              <input type="text" id="player-name" placeholder="Enter your name" maxlength="20">
+            </div>
+            <div class="form-group">
+              <label for="spouse-name">Spouse's Name:</label>
+              <input type="text" id="spouse-name" placeholder="Enter spouse's name" maxlength="20">
+            </div>
+            <div class="form-group">
+              <label for="child-name">Child's Name:</label>
+              <input type="text" id="child-name" placeholder="Enter child's name" maxlength="20">
+            </div>
+          </div>
+        </div>
+        <div class="tutorial-footer">
+          <button id="btn-name-continue" class="btn-primary">CONTINUE →</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Tutorial Modal -->
     <div id="tutorial-modal" class="tutorial-modal hidden">
       <div class="tutorial-content">
@@ -44,11 +71,11 @@
 
         <div class="info-section">
           <div class="info-panel">
-            <div id="mail" class="mail-panel">
-              <!-- Mail renders here -->
-            </div>
-            <div id="family-messages" class="messages-panel">
-              <!-- Messages render here -->
+            <div id="messages-feed" class="messages-feed">
+              <h4>📱 Messages</h4>
+              <div id="messages-list" class="messages-list">
+                <!-- All messages render here -->
+              </div>
             </div>
           </div>
 
