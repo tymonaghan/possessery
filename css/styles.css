@@ -513,6 +513,67 @@ button {
   font-style: italic;
 }
 
+/* Dismiss button */
+.btn-dismiss {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: #666;
+  font-size: 1.5em;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.btn-dismiss:hover {
+  background: #444;
+  color: #e0e0e0;
+}
+
+/* Bill urgency stages */
+.bill-due {
+  border-left-color: #f4a261 !important;
+  background: #2a2620 !important;
+}
+
+.bill-overdue {
+  border-left-color: #e76f51 !important;
+  background: #2a2220 !important;
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+.bill-final {
+  border-left-color: #d62828 !important;
+  background: #2a1818 !important;
+  animation: pulse-urgent 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+@keyframes pulse-urgent {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.01);
+  }
+}
+
 /* Solo Operator Display */
 .solo-operator {
   padding: 10px;

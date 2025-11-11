@@ -225,8 +225,11 @@ function renderMessages() {
   const messagesListEl = document.getElementById('messages-list');
   let html = '';
 
+  // Filter out dismissed messages
+  const visibleMessages = GameState.allMessages.filter(m => !m.dismissed);
+
   // Show messages in chronological order (oldest to newest)
-  for (const msg of GameState.allMessages) {
+  for (const msg of visibleMessages) {
     let messageClass = 'message';
     let senderClass = '';
 
@@ -246,7 +249,16 @@ function renderMessages() {
       }
       senderClass = 'sender-family';
     } else if (msg.type === 'bill') {
-      messageClass += msg.paid ? ' message-bill-paid' : ' message-bill';
+      const billStage = getBillStage(msg);
+      if (msg.paid) {
+        messageClass += ' message-bill-paid';
+      } else {
+        messageClass += ' message-bill';
+        // Add urgency class
+        if (billStage === 'final') messageClass += ' bill-final';
+        else if (billStage === 'overdue') messageClass += ' bill-overdue';
+        else if (billStage === 'due') messageClass += ' bill-due';
+      }
       senderClass = 'sender-bill';
     } else if (msg.type === 'legal') {
       messageClass += ' message-legal';
@@ -254,8 +266,29 @@ function renderMessages() {
     }
 
     html += `<div class="${messageClass}" data-message-id="${msg.id}">`;
+
+    // Add dismiss button for non-bill messages or paid bills
+    const canDismiss = msg.type !== 'bill' || msg.paid;
+    if (canDismiss) {
+      html += `<button class="btn-dismiss" data-message-id="${msg.id}" title="Dismiss">×</button>`;
+    }
+
     html += `<div class="message-sender ${senderClass}">${msg.sender}</div>`;
-    html += `<div class="message-text">${msg.text}</div>`;
+
+    // Add bill stage prefix to text
+    let displayText = msg.text;
+    if (msg.type === 'bill' && !msg.paid) {
+      const billStage = getBillStage(msg);
+      if (billStage === 'final') {
+        displayText = `🚨 FINAL NOTICE: ${msg.text}`;
+      } else if (billStage === 'overdue') {
+        displayText = `⚠️ OVERDUE: ${msg.text}`;
+      } else if (billStage === 'due') {
+        displayText = `⏰ DUE: ${msg.text}`;
+      }
+    }
+
+    html += `<div class="message-text">${displayText}</div>`;
 
     // Add pay button for unpaid bills
     if (msg.type === 'bill' && !msg.paid) {
@@ -269,7 +302,7 @@ function renderMessages() {
     html += `</div>`;
   }
 
-  if (GameState.allMessages.length === 0) {
+  if (visibleMessages.length === 0) {
     html = '<p class="no-messages">No messages yet...</p>';
   }
 
@@ -281,6 +314,16 @@ function renderMessages() {
       const messageId = parseInt(e.target.dataset.messageId);
       if (payBill(messageId)) {
         renderHomeView(); // Re-render to update money and button state
+      }
+    });
+  });
+
+  // Add event listeners for dismiss buttons
+  document.querySelectorAll('.btn-dismiss').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const messageId = parseInt(e.target.dataset.messageId);
+      if (dismissMessage(messageId)) {
+        renderHomeView(); // Re-render to remove dismissed message
       }
     });
   });

@@ -321,6 +321,7 @@ function generateMessages(isFirstDay = false) {
     sender: 'Ricky',
     text: rickyText,
     type: 'ricky',
+    dismissed: false,
     day: GameState.day
   });
 
@@ -336,6 +337,7 @@ function generateMessages(isFirstDay = false) {
     text: familyText,
     type: 'family',
     familyStatus: GameState.familyStatus,
+    dismissed: false,
     day: GameState.day
   });
 
@@ -356,6 +358,8 @@ function generateMessages(isFirstDay = false) {
       type: 'bill',
       amount: bill.amount,
       paid: false,
+      dismissed: false,
+      issueDay: GameState.day,
       day: GameState.day
     });
   }
@@ -372,6 +376,7 @@ function generateMessages(isFirstDay = false) {
         sender: legal.sender,
         text: legalText,
         type: 'legal',
+        dismissed: false,
         day: GameState.day
       });
     }
@@ -393,6 +398,28 @@ function payBill(messageId) {
     return true;
   }
   return false;
+}
+
+// Dismiss a message
+function dismissMessage(messageId) {
+  const message = GameState.allMessages.find(m => m.id === messageId);
+  if (message) {
+    message.dismissed = true;
+    return true;
+  }
+  return false;
+}
+
+// Get bill stage based on days unpaid
+function getBillStage(bill) {
+  if (bill.paid) return 'paid';
+
+  const daysUnpaid = GameState.day - bill.issueDay;
+
+  if (daysUnpaid >= 7) return 'final';      // 7+ days: FINAL NOTICE
+  if (daysUnpaid >= 4) return 'overdue';    // 4-6 days: OVERDUE
+  if (daysUnpaid >= 2) return 'due';        // 2-3 days: DUE
+  return 'ready';                            // 0-1 days: Ready to pay
 }
 
 // Save game to localStorage
