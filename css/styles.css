@@ -223,21 +223,21 @@ button {
 .office-section.office-level-1::before,
 .office-section.office-level-2::before,
 .office-section.office-level-3::before {
-  background-image: url('../assets/office/office-low.jpg');
+  background-image: url('../assets/office/office-low.png');
 }
 
 /* Mid tier office (levels 4-6) */
 .office-section.office-level-4::before,
 .office-section.office-level-5::before,
 .office-section.office-level-6::before {
-  background-image: url('../assets/office/office-mid.jpg');
+  background-image: url('../assets/office/office-mid.png');
 }
 
 /* High tier office (levels 7-9) */
 .office-section.office-level-7::before,
 .office-section.office-level-8::before,
 .office-section.office-level-9::before {
-  background-image: url('../assets/office/office-high.jpg');
+  background-image: url('../assets/office/office-high.png');
 }
 
 .office-visual {

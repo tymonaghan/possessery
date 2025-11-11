@@ -79,9 +79,9 @@ possession/
 Want to add your own office photos for the three main tiers?
 
 1. Place three images in the `assets/office/` directory:
-   - `office-low.jpg` (Starting office - struggling phase)
-   - `office-mid.jpg` (Mid-game office - getting established)
-   - `office-high.jpg` (End-game office - corporate success)
+   - `office-low.png` (Starting office - struggling phase)
+   - `office-mid.png` (Mid-game office - getting established)
+   - `office-high.png` (End-game office - corporate success)
 
 2. The game will automatically use them as backgrounds in the office view!
 
