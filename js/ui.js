@@ -12,21 +12,16 @@ function initUI() {
   if (loaded) {
     console.log('Loaded saved game');
     tutorialCompleted = true; // Skip tutorial for loaded games
+    renderView('home');
   } else {
     initGame();
     tutorialCompleted = false;
+    // Show name selection for new games
+    showNameSelection();
   }
 
   // Set up event listeners
   setupEventListeners();
-
-  // Show tutorial for new games
-  if (!tutorialCompleted && GameState.isFirstDay) {
-    showTutorial();
-  } else {
-    // Render initial view
-    renderView('home');
-  }
 }
 
 // Setup event listeners
@@ -68,6 +63,39 @@ function setupEventListeners() {
   document.getElementById('btn-tutorial-next').addEventListener('click', () => {
     nextTutorialStep();
   });
+
+  // Name selection continue button
+  document.getElementById('btn-name-continue').addEventListener('click', () => {
+    submitNames();
+  });
+}
+
+// Show name selection modal
+function showNameSelection() {
+  document.getElementById('name-modal').classList.remove('hidden');
+}
+
+// Hide name selection modal
+function hideNameSelection() {
+  document.getElementById('name-modal').classList.add('hidden');
+}
+
+// Submit names from form
+function submitNames() {
+  const playerName = document.getElementById('player-name').value.trim() || 'Sam';
+  const spouseName = document.getElementById('spouse-name').value.trim() || 'Alex';
+  const childName = document.getElementById('child-name').value.trim() || 'Maya';
+
+  GameState.playerName = playerName;
+  GameState.spouseName = spouseName;
+  GameState.childName = childName;
+
+  // Update messages with new names
+  updateFamilyStatus();
+  updateRickyMessage();
+
+  hideNameSelection();
+  showTutorial();
 }
 
 // Show tutorial modal
@@ -193,9 +221,15 @@ function renderOffice() {
 
 // Render messages (texts and mail)
 function renderMessages() {
+  // Ricky messages
+  const rickyEl = document.getElementById('ricky-messages');
+  let rickyHtml = `<h4>📱 Cousin Ricky</h4>`;
+  rickyHtml += `<div class="message message-ricky">${GameState.currentRickyMessage}</div>`;
+  rickyEl.innerHTML = rickyHtml;
+
   // Family messages
   const messagesEl = document.getElementById('family-messages');
-  let html = `<h4>Text Messages</h4>`;
+  let html = `<h4>📱 ${GameState.spouseName || 'Alex'}</h4>`;
 
   if (GameState.familyStatus === 'divorced') {
     html += `<div class="message message-cold">${GameState.currentFamilyMessage}</div>`;
@@ -250,11 +284,12 @@ function renderJobsView() {
   document.getElementById('jobs-day').textContent = `Day ${GameState.day}`;
 
   const jobsListEl = document.getElementById('jobs-list');
+  const isSolo = GameState.employees.length === 0;
   let html = '';
 
   for (const job of GameState.availableJobs) {
     const isSelected = GameState.selectedJobs.includes(job);
-    const isFullyAssigned = job.assignedEmployee && job.assignedEquipment;
+    const isFullyAssigned = isSolo ? job.assignedEquipment : (job.assignedEmployee && job.assignedEquipment);
 
     html += `<div class="job-card ${isSelected ? 'job-selected' : ''}" data-job-id="${job.id}">`;
     html += `<div class="job-header">`;
@@ -278,21 +313,26 @@ function renderJobsView() {
     if (isSelected) {
       html += `<div class="job-assignment">`;
 
-      // Employee dropdown
-      html += `<select class="employee-select" data-job-id="${job.id}">`;
-      html += `<option value="">Select Employee</option>`;
+      // Only show employee dropdown if we have employees
+      if (!isSolo) {
+        html += `<select class="employee-select" data-job-id="${job.id}">`;
+        html += `<option value="">Select Employee</option>`;
 
-      const availableEmployees = getAvailableEmployees();
-      // Add currently assigned employee even if not available
-      if (job.assignedEmployee) {
-        availableEmployees.push(job.assignedEmployee);
-      }
+        const availableEmployees = getAvailableEmployees();
+        // Add currently assigned employee even if not available
+        if (job.assignedEmployee) {
+          availableEmployees.push(job.assignedEmployee);
+        }
 
-      for (const emp of availableEmployees) {
-        const selected = job.assignedEmployee && job.assignedEmployee.id === emp.id ? 'selected' : '';
-        html += `<option value="${emp.id}" ${selected}>${emp.name} (${emp.skill}, $${emp.cost}/day)</option>`;
+        for (const emp of availableEmployees) {
+          const selected = job.assignedEmployee && job.assignedEmployee.id === emp.id ? 'selected' : '';
+          html += `<option value="${emp.id}" ${selected}>${emp.name} (${emp.skill}, $${emp.cost}/day)</option>`;
+        }
+        html += `</select>`;
+      } else {
+        // Solo operator - show "You" as operator
+        html += `<div class="solo-operator">👤 You (Solo Operator)</div>`;
       }
-      html += `</select>`;
 
       // Equipment dropdown
       html += `<select class="equipment-select" data-job-id="${job.id}">`;
@@ -333,13 +373,19 @@ function setupJobsEventListeners() {
     checkbox.addEventListener('change', (e) => {
       const jobId = e.target.dataset.jobId;
       const job = GameState.availableJobs.find(j => j.id === jobId);
+      const isSolo = GameState.employees.length === 0;
+      const maxJobs = isSolo ? 1 : 4;
 
       if (e.target.checked) {
-        if (GameState.selectedJobs.length < 4) {
+        if (GameState.selectedJobs.length < maxJobs) {
           GameState.selectedJobs.push(job);
         } else {
           e.target.checked = false;
-          alert('You can only select up to 4 jobs per day!');
+          if (isSolo) {
+            alert('As a solo operator, you can only handle 1 job per day!');
+          } else {
+            alert('You can only select up to 4 jobs per day!');
+          }
         }
       } else {
         const index = GameState.selectedJobs.indexOf(job);
@@ -396,10 +442,23 @@ function setupJobsEventListeners() {
 function updateJobsFooter() {
   const selectedCount = GameState.selectedJobs.length;
   const dailyCosts = calculateDailyCosts();
-  const fullyAssigned = GameState.selectedJobs.filter(j => j.assignedEmployee && j.assignedEquipment).length;
+  const isSolo = GameState.employees.length === 0;
+
+  // Solo operators only need equipment, employees need both employee and equipment
+  const fullyAssigned = isSolo
+    ? GameState.selectedJobs.filter(j => j.assignedEquipment).length
+    : GameState.selectedJobs.filter(j => j.assignedEmployee && j.assignedEquipment).length;
 
   document.getElementById('selected-count').textContent = selectedCount;
   document.getElementById('daily-costs').textContent = `$${dailyCosts}`;
+
+  // Update hint text
+  const hintEl = document.querySelector('.footer-hint');
+  if (isSolo) {
+    hintEl.textContent = 'Select 1 job (solo operator)';
+  } else {
+    hintEl.textContent = 'Select 1-4 jobs for today';
+  }
 
   const goButton = document.getElementById('btn-go-to-work');
   if (fullyAssigned === selectedCount && selectedCount > 0) {

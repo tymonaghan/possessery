@@ -181,6 +181,38 @@ button {
   font-size: 0.9em;
 }
 
+/* Name Selection Form */
+.name-form {
+  margin: 30px 0;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  color: #2a9d8f;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  background: #1a1a1a;
+  border: 2px solid #333;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  font-size: 1em;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #2a9d8f;
+}
+
 .tutorial-footer {
   margin-top: 30px;
   text-align: center;
@@ -352,6 +384,23 @@ button {
 .message-cold {
   border-left-color: #e76f51;
   color: #888;
+}
+
+.message-ricky {
+  border-left-color: #4a90e2;
+  color: #e0e0e0;
+  background: #252a35;
+}
+
+/* Solo Operator Display */
+.solo-operator {
+  padding: 10px;
+  background: #2a2a2a;
+  border: 2px solid #2a9d8f;
+  color: #2a9d8f;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
 }
 
 /* Consequences */

@@ -6,6 +6,11 @@ const GameState = {
   day: 1,
   act: 1,
 
+  // Player info
+  playerName: '',
+  spouseName: '',
+  childName: '',
+
   // Progression tracking
   successfulRepos: 0,
   totalEarned: 0,
@@ -31,23 +36,29 @@ const GameState = {
 
   // Messages
   currentFamilyMessage: '',
+  currentRickyMessage: '',
   currentMail: [],
 
   // Tutorial
-  isFirstDay: true
+  isFirstDay: true,
+  rickyMessagesSeen: 0
 };
 
 // Initialize game
 function initGame() {
-  // Start with basic employees
-  GameState.employees = [...EMPLOYEES.starter];
+  // Start solo - no employees!
+  GameState.employees = [];
+  // Just the basic tow truck
   GameState.equipment = [...EQUIPMENT.starter];
 
-  // Generate first set of jobs
+  // Generate first set of jobs (solo = 1 job)
   generateDailyJobs();
 
   // Set first family message
   updateFamilyStatus();
+
+  // Set first Ricky message
+  updateRickyMessage();
 
   // Generate mail
   generateMail();
@@ -55,7 +66,8 @@ function initGame() {
 
 // Generate daily jobs
 function generateDailyJobs() {
-  const jobCount = 6;
+  // Solo operator gets 1 job per day, hired staff increases this
+  const jobCount = Math.max(1, GameState.employees.length);
   GameState.availableJobs = [];
 
   const templateKeys = Object.keys(JOB_TEMPLATES);
@@ -104,9 +116,15 @@ function calculateJobSuccess(job, employee, equipment) {
   // Base success chance from difficulty
   let successChance = 1.0 - (job.difficulty * 0.15); // 85% at diff 1, 25% at diff 5
 
-  // Employee skill bonus
-  const skillMatch = employee.skill === job.requiredSkill ? 0.2 : 0.1;
-  successChance += (employee.skillLevel * 0.05) + skillMatch;
+  // Employee skill bonus (or solo operator - no bonus)
+  if (employee) {
+    const skillMatch = employee.skill === job.requiredSkill ? 0.2 : 0.1;
+    successChance += (employee.skillLevel * 0.05) + skillMatch;
+  } else {
+    // Solo operator - slight penalty but you learn as you go
+    const experienceBonus = Math.min(0.15, GameState.successfulRepos * 0.01);
+    successChance += experienceBonus;
+  }
 
   // Equipment bonus
   successChance += equipment.bonus;
@@ -132,7 +150,7 @@ function resolveJob(job) {
     success: success,
     payout: success ? job.payout : 0,
     message: success ? template.successMessage : template.failureMessage,
-    employee: employee.name,
+    employee: employee ? employee.name : 'You',
     equipment: equipment.name
   };
 
@@ -203,8 +221,10 @@ function executeDay() {
       GameState.failedRepos++;
     }
 
-    // Subtract employee cost
-    dailyCost += job.assignedEmployee.cost;
+    // Subtract employee cost (if you have employees)
+    if (job.assignedEmployee) {
+      dailyCost += job.assignedEmployee.cost;
+    }
 
     // Subtract equipment rental cost (if not owned)
     if (!job.assignedEquipment.owned) {
@@ -222,6 +242,9 @@ function executeDay() {
 
   // Update family status
   updateFamilyStatus();
+
+  // Update Ricky message
+  updateRickyMessage();
 
   // Generate new mail
   generateMail();
@@ -283,7 +306,40 @@ function updateFamilyStatus() {
 
   // Update family message
   const messages = FAMILY_MESSAGES[newStatus];
-  GameState.currentFamilyMessage = messages[Math.floor(Math.random() * messages.length)];
+  let message = messages[Math.floor(Math.random() * messages.length)];
+
+  // Replace placeholders with actual names
+  message = message.replace(/{child}/g, GameState.childName || 'Maya');
+  message = message.replace(/{spouse}/g, GameState.spouseName || 'Alex');
+
+  GameState.currentFamilyMessage = message;
+}
+
+// Update Ricky message based on progression
+function updateRickyMessage() {
+  // Select message based on game state
+  let messagePool = [];
+
+  if (GameState.day === 1) {
+    messagePool = RICKY_MESSAGES.start;
+  } else if (GameState.employees.length === 0) {
+    messagePool = RICKY_MESSAGES.solo;
+  } else if (GameState.officeLevel >= 3) {
+    messagePool = RICKY_MESSAGES.growth;
+  } else if (GameState.familyStatus === 'strained' || GameState.familyStatus === 'separated') {
+    messagePool = RICKY_MESSAGES.concern;
+  } else {
+    messagePool = RICKY_MESSAGES.general;
+  }
+
+  // Pick a random message from the pool
+  let message = messagePool[Math.floor(Math.random() * messagePool.length)];
+
+  // Replace placeholders
+  message = message.replace(/{name}/g, GameState.playerName || 'cuz');
+
+  GameState.currentRickyMessage = message;
+  GameState.rickyMessagesSeen++;
 }
 
 // Generate mail for current act
@@ -343,6 +399,9 @@ function resetGame() {
   GameState.money = 1500;
   GameState.day = 1;
   GameState.act = 1;
+  GameState.playerName = '';
+  GameState.spouseName = '';
+  GameState.childName = '';
   GameState.successfulRepos = 0;
   GameState.totalEarned = 0;
   GameState.complaintsReceived = 0;
@@ -357,8 +416,10 @@ function resetGame() {
   GameState.pendingConsequences = [];
   GameState.displayedConsequences = [];
   GameState.currentFamilyMessage = '';
+  GameState.currentRickyMessage = '';
   GameState.currentMail = [];
   GameState.isFirstDay = true;
+  GameState.rickyMessagesSeen = 0;
 
   initGame();
 }
@@ -385,9 +446,11 @@ function getAvailableEquipment() {
 function calculateDailyCosts() {
   let total = 0;
   for (const job of GameState.selectedJobs) {
+    // Only count employee cost if job has an employee assigned
     if (job.assignedEmployee) {
       total += job.assignedEmployee.cost;
     }
+    // Equipment rental cost (if not owned)
     if (job.assignedEquipment && !job.assignedEquipment.owned) {
       total += job.assignedEquipment.cost;
     }
