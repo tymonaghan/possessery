@@ -450,24 +450,41 @@ const RICKY_MESSAGES = {
   ]
 };
 
-const MAIL_ITEMS = {
+const BILL_MESSAGES = {
   act1: [
-    { type: 'bill', text: 'Electric Bill: $85' },
-    { type: 'bill', text: 'Water Bill: $45' },
-    { type: 'bill', text: 'Internet Bill: $60' },
-    { type: 'bill', text: 'Car Insurance: $120' }
+    { sender: 'Electric Company', text: 'Your electric bill is due', amount: 85, paid: false },
+    { sender: 'Water Dept', text: 'Water bill - payment required', amount: 45, paid: false },
+    { sender: 'Internet Provider', text: 'Monthly internet service due', amount: 60, paid: false },
+    { sender: 'Insurance Co', text: 'Car insurance premium due', amount: 120, paid: false },
+    { sender: 'Gas Company', text: 'Natural gas bill enclosed', amount: 55, paid: false },
+    { sender: 'Phone Company', text: 'Your phone bill is ready', amount: 75, paid: false }
   ],
   act2: [
-    { type: 'bill', text: 'Electric Bill: $85' },
-    { type: 'bill', text: 'Medical Bill: $850' },
-    { type: 'legal', text: 'Legal Notice: Custody Hearing' },
-    { type: 'bill', text: 'Car Insurance: $120' }
+    { sender: 'Electric Company', text: 'PAST DUE - Electric bill', amount: 85, paid: false },
+    { sender: 'Medical Billing', text: 'Outstanding medical balance', amount: 850, paid: false },
+    { sender: 'Law Office', text: 'Legal retainer required', amount: 500, paid: false },
+    { sender: 'Insurance Co', text: 'Car insurance - URGENT', amount: 120, paid: false },
+    { sender: 'Credit Card', text: 'Minimum payment due', amount: 250, paid: false },
+    { sender: 'Landlord', text: 'Rent payment reminder', amount: 950, paid: false }
   ],
   act3: [
-    { type: 'legal', text: 'Divorce Papers (Final)' },
-    { type: 'bill', text: 'Child Support: $800/mo' },
-    { type: 'bill', text: 'Apartment Rent: $950' },
-    { type: 'bill', text: 'Car Insurance: $120' }
+    { sender: 'Divorce Attorney', text: 'Final legal fees due', amount: 1200, paid: false },
+    { sender: 'Child Support', text: 'Monthly child support payment', amount: 800, paid: false },
+    { sender: 'Landlord', text: 'Apartment rent due', amount: 950, paid: false },
+    { sender: 'Insurance Co', text: 'Car insurance premium', amount: 120, paid: false },
+    { sender: 'Credit Card', text: 'OVERDUE - Pay immediately', amount: 450, paid: false },
+    { sender: 'Electric Company', text: 'Disconnect notice', amount: 175, paid: false }
+  ]
+};
+
+const LEGAL_MESSAGES = {
+  act2: [
+    { sender: 'Family Court', text: 'Custody hearing scheduled for next month', type: 'legal' },
+    { sender: '{spouse}', text: 'Lawyer sent me the papers. Please look at them.', type: 'legal' }
+  ],
+  act3: [
+    { sender: 'Family Court', text: 'Divorce finalized. Documents attached.', type: 'legal' },
+    { sender: 'Child Services', text: 'Visitation schedule update', type: 'legal' }
   ]
 };
 
@@ -500,5 +517,5 @@ const TUTORIAL_STEPS = [
 
 // Export for use in game.js
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { EMPLOYEES, EQUIPMENT, JOB_TEMPLATES, STREETS, OFFICE_UPGRADES, FAMILY_MESSAGES, RICKY_MESSAGES, MAIL_ITEMS, TUTORIAL_STEPS };
+  module.exports = { EMPLOYEES, EQUIPMENT, JOB_TEMPLATES, STREETS, OFFICE_UPGRADES, FAMILY_MESSAGES, RICKY_MESSAGES, BILL_MESSAGES, LEGAL_MESSAGES, TUTORIAL_STEPS };
 }

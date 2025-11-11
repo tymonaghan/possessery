@@ -219,40 +219,76 @@ function renderOffice() {
   officeEl.innerHTML = html;
 }
 
-// Render messages (texts and mail)
+// Render unified message feed
 function renderMessages() {
-  // Ricky messages
-  const rickyEl = document.getElementById('ricky-messages');
-  let rickyHtml = `<h4>📱 Cousin Ricky</h4>`;
-  rickyHtml += `<div class="message message-ricky">${GameState.currentRickyMessage}</div>`;
-  rickyEl.innerHTML = rickyHtml;
+  const messagesListEl = document.getElementById('messages-list');
+  let html = '';
 
-  // Family messages
-  const messagesEl = document.getElementById('family-messages');
-  let html = `<h4>📱 ${GameState.spouseName || 'Alex'}</h4>`;
+  // Show messages in chronological order (oldest to newest)
+  for (const msg of GameState.allMessages) {
+    let messageClass = 'message';
+    let senderClass = '';
 
-  if (GameState.familyStatus === 'divorced') {
-    html += `<div class="message message-cold">${GameState.currentFamilyMessage}</div>`;
-  } else if (GameState.familyStatus === 'separated') {
-    html += `<div class="message message-distant">${GameState.currentFamilyMessage}</div>`;
-  } else if (GameState.familyStatus === 'strained') {
-    html += `<div class="message message-strained">${GameState.currentFamilyMessage}</div>`;
-  } else {
-    html += `<div class="message message-warm">${GameState.currentFamilyMessage}</div>`;
+    // Style based on message type
+    if (msg.type === 'ricky') {
+      messageClass += ' message-ricky';
+      senderClass = 'sender-ricky';
+    } else if (msg.type === 'family') {
+      if (msg.familyStatus === 'divorced') {
+        messageClass += ' message-cold';
+      } else if (msg.familyStatus === 'separated') {
+        messageClass += ' message-distant';
+      } else if (msg.familyStatus === 'strained') {
+        messageClass += ' message-strained';
+      } else {
+        messageClass += ' message-warm';
+      }
+      senderClass = 'sender-family';
+    } else if (msg.type === 'bill') {
+      messageClass += msg.paid ? ' message-bill-paid' : ' message-bill';
+      senderClass = 'sender-bill';
+    } else if (msg.type === 'legal') {
+      messageClass += ' message-legal';
+      senderClass = 'sender-legal';
+    }
+
+    html += `<div class="${messageClass}" data-message-id="${msg.id}">`;
+    html += `<div class="message-sender ${senderClass}">${msg.sender}</div>`;
+    html += `<div class="message-text">${msg.text}</div>`;
+
+    // Add pay button for unpaid bills
+    if (msg.type === 'bill' && !msg.paid) {
+      const canAfford = GameState.money >= msg.amount;
+      const buttonClass = canAfford ? 'btn-pay' : 'btn-pay-disabled';
+      html += `<button class="${buttonClass}" data-message-id="${msg.id}" data-amount="${msg.amount}" ${!canAfford ? 'disabled' : ''}>Pay $${msg.amount}</button>`;
+    } else if (msg.type === 'bill' && msg.paid) {
+      html += `<div class="bill-paid-label">✓ PAID</div>`;
+    }
+
+    html += `</div>`;
   }
 
-  messagesEl.innerHTML = html;
-
-  // Mail
-  const mailEl = document.getElementById('mail');
-  html = `<h4>Mail</h4>`;
-
-  for (const item of GameState.currentMail) {
-    const itemClass = item.type === 'legal' ? 'mail-legal' : 'mail-bill';
-    html += `<div class="mail-item ${itemClass}">• ${item.text}</div>`;
+  if (GameState.allMessages.length === 0) {
+    html = '<p class="no-messages">No messages yet...</p>';
   }
 
-  mailEl.innerHTML = html;
+  messagesListEl.innerHTML = html;
+
+  // Add event listeners for pay buttons
+  document.querySelectorAll('.btn-pay').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const messageId = parseInt(e.target.dataset.messageId);
+      if (payBill(messageId)) {
+        renderHomeView(); // Re-render to update money and button state
+      }
+    });
+  });
+
+  // Auto-scroll to bottom to show newest messages
+  const messagesFeed = document.getElementById('messages-feed');
+  if (messagesFeed) {
+    messagesFeed.scrollTop = messagesFeed.scrollHeight;
+  }
 }
 
 // Render consequences

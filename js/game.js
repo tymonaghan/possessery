@@ -35,9 +35,8 @@ const GameState = {
   displayedConsequences: [],
 
   // Messages
-  currentFamilyMessage: '',
-  currentRickyMessage: '',
-  currentMail: [],
+  allMessages: [], // Unified message feed
+  nextMessageId: 0,
 
   // Tutorial
   isFirstDay: true,
@@ -54,14 +53,8 @@ function initGame() {
   // Generate first set of jobs (solo = 1 job)
   generateDailyJobs();
 
-  // Set first family message
-  updateFamilyStatus();
-
-  // Set first Ricky message
-  updateRickyMessage();
-
-  // Generate mail
-  generateMail();
+  // Generate initial messages
+  generateMessages(true);
 }
 
 // Generate daily jobs
@@ -240,14 +233,8 @@ function executeDay() {
   // Update office level
   updateOfficeLevel();
 
-  // Update family status
-  updateFamilyStatus();
-
-  // Update Ricky message
-  updateRickyMessage();
-
-  // Generate new mail
-  generateMail();
+  // Generate new messages
+  generateMessages();
 
   // Advance day
   GameState.day++;
@@ -303,66 +290,109 @@ function updateFamilyStatus() {
 
   GameState.familyStatus = newStatus;
   GameState.act = newAct;
-
-  // Update family message
-  const messages = FAMILY_MESSAGES[newStatus];
-  let message = messages[Math.floor(Math.random() * messages.length)];
-
-  // Replace placeholders with actual names
-  message = message.replace(/{child}/g, GameState.childName || 'Maya');
-  message = message.replace(/{spouse}/g, GameState.spouseName || 'Alex');
-
-  GameState.currentFamilyMessage = message;
 }
 
-// Update Ricky message based on progression
-function updateRickyMessage() {
-  // Select message based on game state
-  let messagePool = [];
+// Generate unified message feed
+function generateMessages(isFirstDay = false) {
+  const newMessages = [];
 
+  // Update family status first
+  updateFamilyStatus();
+
+  // 1. Add Ricky message
+  let rickyPool = [];
   if (GameState.day === 1) {
-    messagePool = RICKY_MESSAGES.start;
+    rickyPool = RICKY_MESSAGES.start;
   } else if (GameState.employees.length === 0) {
-    messagePool = RICKY_MESSAGES.solo;
+    rickyPool = RICKY_MESSAGES.solo;
   } else if (GameState.officeLevel >= 3) {
-    messagePool = RICKY_MESSAGES.growth;
+    rickyPool = RICKY_MESSAGES.growth;
   } else if (GameState.familyStatus === 'strained' || GameState.familyStatus === 'separated') {
-    messagePool = RICKY_MESSAGES.concern;
+    rickyPool = RICKY_MESSAGES.concern;
   } else {
-    messagePool = RICKY_MESSAGES.general;
+    rickyPool = RICKY_MESSAGES.general;
   }
 
-  // Pick a random message from the pool
-  let message = messagePool[Math.floor(Math.random() * messagePool.length)];
+  let rickyText = rickyPool[Math.floor(Math.random() * rickyPool.length)];
+  rickyText = rickyText.replace(/{name}/g, GameState.playerName || 'cuz');
 
-  // Replace placeholders
-  message = message.replace(/{name}/g, GameState.playerName || 'cuz');
+  newMessages.push({
+    id: GameState.nextMessageId++,
+    sender: 'Ricky',
+    text: rickyText,
+    type: 'ricky',
+    day: GameState.day
+  });
 
-  GameState.currentRickyMessage = message;
-  GameState.rickyMessagesSeen++;
-}
+  // 2. Add family message
+  const familyMessages = FAMILY_MESSAGES[GameState.familyStatus];
+  let familyText = familyMessages[Math.floor(Math.random() * familyMessages.length)];
+  familyText = familyText.replace(/{child}/g, GameState.childName || 'Maya');
+  familyText = familyText.replace(/{spouse}/g, GameState.spouseName || 'Alex');
 
-// Generate mail for current act
-function generateMail() {
-  let mailPool = [];
-  if (GameState.act === 1) {
-    mailPool = MAIL_ITEMS.act1;
-  } else if (GameState.act === 2) {
-    mailPool = MAIL_ITEMS.act2;
-  } else {
-    mailPool = MAIL_ITEMS.act3;
+  newMessages.push({
+    id: GameState.nextMessageId++,
+    sender: GameState.spouseName || 'Alex',
+    text: familyText,
+    type: 'family',
+    familyStatus: GameState.familyStatus,
+    day: GameState.day
+  });
+
+  // 3. Add bills (increasing frequency with act progression)
+  const billPool = BILL_MESSAGES[`act${GameState.act}`];
+  const billChance = GameState.act === 1 ? 0.4 : GameState.act === 2 ? 0.6 : 0.8;
+
+  // On first day, always add 1-2 bills. Otherwise use chance-based
+  const numBills = isFirstDay ? Math.floor(Math.random() * 2) + 1 :
+    (Math.random() < billChance ? Math.floor(Math.random() * 2) + 1 : 0);
+
+  for (let i = 0; i < numBills && billPool.length > 0; i++) {
+    const bill = billPool[Math.floor(Math.random() * billPool.length)];
+    newMessages.push({
+      id: GameState.nextMessageId++,
+      sender: bill.sender,
+      text: bill.text,
+      type: 'bill',
+      amount: bill.amount,
+      paid: false,
+      day: GameState.day
+    });
   }
 
-  // Select 2-3 random mail items
-  const count = Math.floor(Math.random() * 2) + 2;
-  GameState.currentMail = [];
+  // 4. Add legal messages (act 2 & 3 only, low chance)
+  if (GameState.act >= 2 && Math.random() < 0.3) {
+    const legalPool = LEGAL_MESSAGES[`act${GameState.act}`];
+    if (legalPool && legalPool.length > 0) {
+      const legal = legalPool[Math.floor(Math.random() * legalPool.length)];
+      let legalText = legal.text.replace(/{spouse}/g, GameState.spouseName || 'Alex');
 
-  for (let i = 0; i < count && i < mailPool.length; i++) {
-    const item = mailPool[Math.floor(Math.random() * mailPool.length)];
-    if (!GameState.currentMail.find(m => m.text === item.text)) {
-      GameState.currentMail.push(item);
+      newMessages.push({
+        id: GameState.nextMessageId++,
+        sender: legal.sender,
+        text: legalText,
+        type: 'legal',
+        day: GameState.day
+      });
     }
   }
+
+  // Add new messages to the feed (keep last 20 messages)
+  GameState.allMessages.push(...newMessages);
+  if (GameState.allMessages.length > 20) {
+    GameState.allMessages = GameState.allMessages.slice(-20);
+  }
+}
+
+// Pay a bill
+function payBill(messageId) {
+  const message = GameState.allMessages.find(m => m.id === messageId);
+  if (message && message.type === 'bill' && !message.paid && GameState.money >= message.amount) {
+    GameState.money -= message.amount;
+    message.paid = true;
+    return true;
+  }
+  return false;
 }
 
 // Save game to localStorage
@@ -415,9 +445,8 @@ function resetGame() {
   GameState.dayResults = [];
   GameState.pendingConsequences = [];
   GameState.displayedConsequences = [];
-  GameState.currentFamilyMessage = '';
-  GameState.currentRickyMessage = '';
-  GameState.currentMail = [];
+  GameState.allMessages = [];
+  GameState.nextMessageId = 0;
   GameState.isFirstDay = true;
   GameState.rickyMessagesSeen = 0;
 
