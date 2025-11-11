@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POSSESSION - A Repo Management Game</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header>
+      <h1>POSSESSION</h1>
+      <div class="header-controls">
+        <button id="btn-reset" class="btn-secondary">Reset Game</button>
+      </div>
+    </header>
+
+    <!-- Home/Office View -->
+    <div id="home-view" class="view">
+      <div class="view-header">
+        <h2>YOUR OFFICE - <span id="home-day">Day 1</span></h2>
+        <div class="money-display">Money: <span id="home-money">$1,500</span></div>
+      </div>
+
+      <div id="tutorial-text" class="tutorial hidden">
+        <p><strong>Welcome to Possession Repos.</strong></p>
+        <p>Select jobs, assign your team, complete repos, earn money, upgrade your office.</p>
+        <p>It's simple. It's just business.</p>
+      </div>
+
+      <div class="home-content">
+        <div class="office-section">
+          <div id="office-visual" class="office-visual">
+            <!-- Office upgrades render here -->
+          </div>
+        </div>
+
+        <div class="info-section">
+          <div class="info-panel">
+            <div id="mail" class="mail-panel">
+              <!-- Mail renders here -->
+            </div>
+            <div id="family-messages" class="messages-panel">
+              <!-- Messages render here -->
+            </div>
+          </div>
+
+          <div class="consequences-panel">
+            <div id="consequences">
+              <!-- Consequences render here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="view-footer">
+        <button id="btn-start-day" class="btn-primary">START NEW DAY</button>
+      </div>
+    </div>
+
+    <!-- Jobs Selection View -->
+    <div id="jobs-view" class="view hidden">
+      <div class="view-header">
+        <h2>AVAILABLE JOBS - <span id="jobs-day">Day 1</span></h2>
+        <button id="btn-back-to-home" class="btn-secondary">Back to Office</button>
+      </div>
+
+      <div class="jobs-content">
+        <div id="jobs-list" class="jobs-list">
+          <!-- Jobs render here -->
+        </div>
+      </div>
+
+      <div class="view-footer">
+        <div class="footer-stats">
+          <span>Selected: <span id="selected-count">0/4</span></span>
+          <span>Daily Costs: <span id="daily-costs">$0</span></span>
+        </div>
+        <button id="btn-go-to-work" class="btn-primary" disabled>GO TO WORK →</button>
+      </div>
+    </div>
+
+    <!-- Results View -->
+    <div id="results-view" class="view hidden">
+      <div class="view-header">
+        <h2>END OF DAY REPORT</h2>
+      </div>
+
+      <div class="results-content">
+        <div id="results-list" class="results-list">
+          <!-- Results render here -->
+        </div>
+      </div>
+
+      <div class="results-summary">
+        <div class="summary-row">
+          <span>Success Rate:</span>
+          <span id="success-rate">0/0</span>
+        </div>
+        <div class="summary-row">
+          <span>Daily Earnings:</span>
+          <span id="total-earned">$0</span>
+        </div>
+        <div class="summary-row">
+          <span>Overhead:</span>
+          <span id="overhead-costs">-$0</span>
+        </div>
+        <div class="summary-row summary-total">
+          <span>Net Profit:</span>
+          <span id="net-profit">$0</span>
+        </div>
+      </div>
+
+      <div class="view-footer">
+        <button id="btn-continue-evening" class="btn-primary">CONTINUE TO EVENING</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>
