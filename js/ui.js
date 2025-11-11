@@ -2,21 +2,31 @@
 
 // Current view state
 let currentView = 'home'; // home, jobs, results
+let currentTutorialStep = 0;
+let tutorialCompleted = false;
 
 // Initialize UI
 function initUI() {
   // Try to load saved game
-  if (loadGame()) {
+  const loaded = loadGame();
+  if (loaded) {
     console.log('Loaded saved game');
+    tutorialCompleted = true; // Skip tutorial for loaded games
   } else {
     initGame();
+    tutorialCompleted = false;
   }
 
   // Set up event listeners
   setupEventListeners();
 
-  // Render initial view
-  renderView('home');
+  // Show tutorial for new games
+  if (!tutorialCompleted && GameState.isFirstDay) {
+    showTutorial();
+  } else {
+    // Render initial view
+    renderView('home');
+  }
 }
 
 // Setup event listeners
@@ -48,9 +58,61 @@ function setupEventListeners() {
   document.getElementById('btn-reset').addEventListener('click', () => {
     if (confirm('Are you sure you want to reset? This will delete your save.')) {
       resetGame();
-      renderView('home');
+      tutorialCompleted = false;
+      currentTutorialStep = 0;
+      showTutorial();
     }
   });
+
+  // Tutorial next button
+  document.getElementById('btn-tutorial-next').addEventListener('click', () => {
+    nextTutorialStep();
+  });
+}
+
+// Show tutorial modal
+function showTutorial() {
+  currentTutorialStep = 0;
+  document.getElementById('tutorial-modal').classList.remove('hidden');
+  renderTutorialStep();
+}
+
+// Hide tutorial modal
+function hideTutorial() {
+  document.getElementById('tutorial-modal').classList.add('hidden');
+  tutorialCompleted = true;
+  renderView('home');
+}
+
+// Render current tutorial step
+function renderTutorialStep() {
+  const step = TUTORIAL_STEPS[currentTutorialStep];
+  const stepEl = document.getElementById('tutorial-step');
+  const btnEl = document.getElementById('btn-tutorial-next');
+
+  let html = `<h2>${step.title}</h2>`;
+  html += `<p>${step.content}</p>`;
+  html += `<div class="tutorial-progress">Step ${currentTutorialStep + 1} of ${TUTORIAL_STEPS.length}</div>`;
+
+  stepEl.innerHTML = html;
+
+  // Update button text for last step
+  if (currentTutorialStep === TUTORIAL_STEPS.length - 1) {
+    btnEl.textContent = "LET'S GO! →";
+  } else {
+    btnEl.textContent = "NEXT →";
+  }
+}
+
+// Advance to next tutorial step
+function nextTutorialStep() {
+  currentTutorialStep++;
+
+  if (currentTutorialStep >= TUTORIAL_STEPS.length) {
+    hideTutorial();
+  } else {
+    renderTutorialStep();
+  }
 }
 
 // Render current view
@@ -89,21 +151,20 @@ function renderHomeView() {
 
   // Render consequences
   renderConsequences();
-
-  // Show tutorial on first day
-  if (GameState.isFirstDay) {
-    document.getElementById('tutorial-text').classList.remove('hidden');
-  } else {
-    document.getElementById('tutorial-text').classList.add('hidden');
-  }
 }
 
 // Render office visual
 function renderOffice() {
   const office = OFFICE_UPGRADES[GameState.officeLevel];
   const officeEl = document.getElementById('office-visual');
+  const officeSectionEl = document.querySelector('.office-section');
 
-  let html = `<div class="office-level-${GameState.officeLevel}">`;
+  // Update office section class for background image
+  if (officeSectionEl) {
+    officeSectionEl.className = `office-section office-level-${GameState.officeLevel}`;
+  }
+
+  let html = `<div>`;
   html += `<h3>${office.name}</h3>`;
   html += `<p class="office-description">${office.description}</p>`;
   html += `<ul class="office-items">`;
@@ -337,7 +398,7 @@ function updateJobsFooter() {
   const dailyCosts = calculateDailyCosts();
   const fullyAssigned = GameState.selectedJobs.filter(j => j.assignedEmployee && j.assignedEquipment).length;
 
-  document.getElementById('selected-count').textContent = `${selectedCount}/4`;
+  document.getElementById('selected-count').textContent = selectedCount;
   document.getElementById('daily-costs').textContent = `$${dailyCosts}`;
 
   const goButton = document.getElementById('btn-go-to-work');

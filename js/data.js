@@ -431,7 +431,34 @@ const MAIL_ITEMS = {
   ]
 };
 
+const TUTORIAL_STEPS = [
+  {
+    title: "Welcome to POSSESSION",
+    content: "You've just started your own repossession company. Times are tough, but there's money to be made in the repo business. Your goal? Build an empire from the ground up."
+  },
+  {
+    title: "How It Works",
+    content: "Each day, you'll receive a list of repo jobs from creditors. Vehicles that are behind on payments and need to be recovered. You select which jobs to take, assign your team, and complete the work."
+  },
+  {
+    title: "Selecting Jobs",
+    content: "You can choose <strong>1 to 4 jobs per day</strong>. You don't have to take all 4! Start small if you want. Each job shows the difficulty (★ rating) and potential payout. Higher difficulty = higher reward, but lower success chance."
+  },
+  {
+    title: "Assigning Resources",
+    content: "For each job you select, assign an <strong>employee</strong> and <strong>equipment</strong>. Match employee skills (negotiator, investigator, intimidator) to the job type for better success rates. Better equipment increases your odds."
+  },
+  {
+    title: "Results & Growth",
+    content: "Hit 'Go to Work' to execute all your jobs. You'll see which succeeded and which failed. Successful repos earn money (minus daily overhead costs). Use your earnings to upgrade your office and equipment!"
+  },
+  {
+    title: "Build Your Empire",
+    content: "Complete more repos, earn more money, unlock better upgrades. Watch your office transform from a folding table to a corporate powerhouse. Ready to get started?"
+  }
+];
+
 // Export for use in game.js
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { EMPLOYEES, EQUIPMENT, JOB_TEMPLATES, STREETS, OFFICE_UPGRADES, FAMILY_MESSAGES, MAIL_ITEMS };
+  module.exports = { EMPLOYEES, EQUIPMENT, JOB_TEMPLATES, STREETS, OFFICE_UPGRADES, FAMILY_MESSAGES, MAIL_ITEMS, TUTORIAL_STEPS };
 }

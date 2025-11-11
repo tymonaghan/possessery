@@ -16,17 +16,23 @@
       </div>
     </header>
 
+    <!-- Tutorial Modal -->
+    <div id="tutorial-modal" class="tutorial-modal hidden">
+      <div class="tutorial-content">
+        <div id="tutorial-step" class="tutorial-step">
+          <!-- Tutorial steps render here -->
+        </div>
+        <div class="tutorial-footer">
+          <button id="btn-tutorial-next" class="btn-primary">NEXT →</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Home/Office View -->
     <div id="home-view" class="view">
       <div class="view-header">
         <h2>YOUR OFFICE - <span id="home-day">Day 1</span></h2>
         <div class="money-display">Money: <span id="home-money">$1,500</span></div>
-      </div>
-
-      <div id="tutorial-text" class="tutorial hidden">
-        <p><strong>Welcome to Possession Repos.</strong></p>
-        <p>Select jobs, assign your team, complete repos, earn money, upgrade your office.</p>
-        <p>It's simple. It's just business.</p>
       </div>
 
       <div class="home-content">
@@ -73,9 +79,12 @@
       </div>
 
       <div class="view-footer">
-        <div class="footer-stats">
-          <span>Selected: <span id="selected-count">0/4</span></span>
-          <span>Daily Costs: <span id="daily-costs">$0</span></span>
+        <div class="footer-info">
+          <p class="footer-hint">Select 1-4 jobs for today</p>
+          <div class="footer-stats">
+            <span>Selected: <span id="selected-count">0</span></span>
+            <span>Daily Costs: <span id="daily-costs">$0</span></span>
+          </div>
         </div>
         <button id="btn-go-to-work" class="btn-primary" disabled>GO TO WORK →</button>
       </div>

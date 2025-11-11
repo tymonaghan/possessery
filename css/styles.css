@@ -82,6 +82,7 @@ button {
 /* Views */
 .view {
   min-height: 60vh;
+  padding-bottom: 180px; /* Space for fixed footer */
 }
 
 .view.hidden {
@@ -110,23 +111,79 @@ button {
 }
 
 .view-footer {
-  margin-top: 30px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   padding: 20px;
   background: #222;
-  border: 2px solid #333;
+  border-top: 3px solid #2a9d8f;
   text-align: center;
+  z-index: 100;
+  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
 }
 
-/* Tutorial */
-.tutorial {
-  background: #2a4a2a;
-  border: 2px solid #3a5a3a;
-  padding: 20px;
+.footer-info {
+  margin-bottom: 15px;
+}
+
+.footer-hint {
+  color: #2a9d8f;
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 1.1em;
+}
+
+/* Tutorial Modal */
+.tutorial-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.tutorial-modal.hidden {
+  display: none;
+}
+
+.tutorial-content {
+  background: #222;
+  border: 3px solid #2a9d8f;
+  padding: 40px;
+  max-width: 600px;
+  width: 90%;
+  box-shadow: 0 0 30px rgba(42, 157, 143, 0.5);
+}
+
+.tutorial-step h2 {
+  color: #2a9d8f;
+  margin-bottom: 20px;
+  font-size: 2em;
+}
+
+.tutorial-step p {
+  color: #e0e0e0;
+  line-height: 1.8;
+  font-size: 1.1em;
   margin-bottom: 20px;
 }
 
-.tutorial p {
-  margin-bottom: 10px;
+.tutorial-progress {
+  color: #888;
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.9em;
+}
+
+.tutorial-footer {
+  margin-top: 30px;
+  text-align: center;
 }
 
 /* Home View */
@@ -142,6 +199,50 @@ button {
   border: 2px solid #333;
   padding: 20px;
   min-height: 400px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Office background images (optional) */
+.office-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.3;
+  z-index: 0;
+}
+
+/* Low tier office (levels 0-3) */
+.office-section.office-level-0::before,
+.office-section.office-level-1::before,
+.office-section.office-level-2::before,
+.office-section.office-level-3::before {
+  background-image: url('../assets/office/office-low.jpg');
+}
+
+/* Mid tier office (levels 4-6) */
+.office-section.office-level-4::before,
+.office-section.office-level-5::before,
+.office-section.office-level-6::before {
+  background-image: url('../assets/office/office-mid.jpg');
+}
+
+/* High tier office (levels 7-9) */
+.office-section.office-level-7::before,
+.office-section.office-level-8::before,
+.office-section.office-level-9::before {
+  background-image: url('../assets/office/office-high.jpg');
+}
+
+.office-visual {
+  position: relative;
+  z-index: 1;
 }
 
 .office-visual h3 {
@@ -390,7 +491,6 @@ button {
   display: flex;
   justify-content: center;
   gap: 40px;
-  margin-bottom: 20px;
   font-size: 1.1em;
   color: #e9c46a;
 }

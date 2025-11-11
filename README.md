@@ -1,20 +1,16 @@
 # POSSESSION
 
-A repo company management game about accumulating better office equipment and upgrades through successful repossessions. The better you are at your job, the nicer your stuff gets - but gradually, the game reveals the human cost of your efficiency.
+**Build your repo empire from the ground up!**
+
+Start with nothing but a folding table and a dream. Take on repossession jobs, earn cash, upgrade your office, hire skilled employees, and invest in professional equipment. Watch your business grow from a struggling solo operation into a thriving corporate powerhouse!
 
 ## About
 
-**POSSESSION** is a browser-based narrative management game that explores the moral complexity of debt collection through incremental gameplay mechanics. What starts as a straightforward "cookie clicker" style progression system gradually reveals deeper consequences of your professional success.
+**POSSESSION** is a browser-based repo company management game where you climb the ladder of success through smart job selection, strategic resource management, and steady progression.
 
-You manage a repossession company, selecting jobs, assigning employees and equipment, and watching your office transform from a folding table and CRT monitor into a sleek corporate space. But as your material success grows, fragments of the human impact of your work accumulate - overheard conversations, news snippets, lawsuit notices. Your family texts get shorter. The photo on your desk fades, then disappears.
+Choose from various repo jobs each day, assign your team and equipment, and watch the money roll in. Every successful repo brings you closer to that executive desk, those dual monitors, and the corner office setup you've always wanted.
 
-The game never tells you this is wrong. It just shows you what happens.
-
-### Design Philosophy
-
-POSSESSION is inspired by games that use systemic mechanics to create moral weight without explicit moralizing. The progression hook is genuine - getting upgrades feels good - but the environmental storytelling creates an emotional counterweight that the player must reconcile themselves.
-
-**Special thanks to *Papers, Please* for pioneering this design space of games that make you complicit in systems you might question.**
+**Repo. Earn. Upgrade. Repeat.**
 
 ## How to Play
 
@@ -31,40 +27,37 @@ POSSESSION is inspired by games that use systemic mechanics to create moral weig
    - No build step, no server needed
    - Works offline
 
-3. **Start playing**
+3. **Start building your empire!**
    - The game auto-saves to browser localStorage
    - Refresh the page to continue from where you left off
 
 ### Gameplay Loop
 
-1. **Morning**: Review available repo jobs for the day
-2. **Selection**: Choose 3-4 jobs to pursue
-3. **Assignment**: Assign employees and equipment to each job
-4. **Execute**: Click "Go to Work" and see the results
-5. **Evening**: Return to your office, check messages, see news
-6. **Progress**: Watch your office upgrade as you succeed
-7. **Repeat**: Start the next day
+1. **Review Jobs**: Check out available repo assignments for the day
+2. **Select Jobs**: Pick 1-4 jobs based on difficulty and payout
+3. **Assign Resources**: Match employees and equipment to each job for maximum success
+4. **Execute**: Hit "Go to Work" and watch the results
+5. **Get Paid**: Successful repos earn cash minus overhead costs
+6. **Upgrade**: Spend your earnings on better equipment and office improvements
+7. **Grow**: Hire more employees, take on tougher jobs, expand your operation!
 
 ### Game Mechanics
 
-- **Success Rate**: Each job has a difficulty rating and required skills
-- **Employee Skills**: Match employee skills to job requirements for better success rates
-- **Equipment**: Better equipment increases success probability
-- **Progression**: Successful repos earn money and upgrade your office
-- **Consequences**: Some jobs generate delayed consequences (news items, complaints, family strain)
-- **Acts**: The game progresses through three acts as your career advances:
-  - **Act 1**: Small town - Personal and direct consequences
-  - **Act 2**: Suburbs - More abstract, distant impacts
-  - **Act 3**: City - Everything becomes statistics
+- **Success Rate**: Match employee skills to job requirements for better odds
+- **Difficulty Levels**: Higher difficulty = higher payout (but riskier!)
+- **Equipment Bonuses**: Better gear increases your success probability
+- **Office Progression**: Earn money and complete repos to unlock office upgrades
+- **Three Territories**: Progress from small town → suburbs → big city operations
+- **Employees**: Start with basic staff, hire specialists as you grow
+- **Smart Strategy**: Balance risk vs reward to maximize profits
 
-### Tips
+### Tips for Success
 
-- Match employee skills to job types for better success rates
-- Higher difficulty jobs pay more but have lower success rates
-- Some scenarios have hidden complications (wrong VIN, creditor errors)
-- Watch the consequences panel for the ripple effects of your work
-- Pay attention to your family messages and the items in your office
-- The game is designed to be played for 30-60 in-game days
+- Match employee skills (negotiator, investigator, intimidator) to job types
+- Invest in better equipment early - it pays for itself quickly
+- Don't take on too many high-difficulty jobs at once
+- Watch your daily overhead costs vs potential earnings
+- Steady progress beats risky gambles - build your empire smart!
 
 ## Game Structure
 
@@ -74,12 +67,25 @@ possession/
 ├── css/
 │   └── styles.css      # All visual styling
 ├── js/
-│   ├── data.js         # Job templates, employees, equipment, consequences
+│   ├── data.js         # Job templates, employees, equipment
 │   ├── game.js         # Core game logic and state management
 │   └── ui.js           # UI rendering and event handling
 └── assets/
-    └── office/         # (Future: office upgrade images)
+    └── office/         # Office upgrade background images (optional)
 ```
+
+## Adding Custom Office Images
+
+Want to add your own office photos for the three main tiers?
+
+1. Place three images in the `assets/office/` directory:
+   - `office-low.jpg` (Starting office - struggling phase)
+   - `office-mid.jpg` (Mid-game office - getting established)
+   - `office-high.jpg` (End-game office - corporate success)
+
+2. The game will automatically use them as backgrounds in the office view!
+
+Recommended image size: 800x600px or similar aspect ratio
 
 ## Technical Details
 
@@ -92,11 +98,11 @@ possession/
 
 The game uses a simple modular structure:
 
-- **data.js**: All game content (job templates, story text, progression thresholds)
+- **data.js**: All game content (job templates, employees, equipment)
 - **game.js**: Game state, logic functions, save/load system
 - **ui.js**: DOM manipulation and rendering
 
-To modify game content (add jobs, change consequences, adjust progression), edit `data.js`.
+To modify game content, edit `data.js`.
 To change game mechanics, edit `game.js`.
 To adjust visuals or layout, edit `styles.css`.
 
@@ -112,4 +118,4 @@ This project is a creative prototype. Feel free to explore, learn from, and buil
 
 ---
 
-*A game about choices, consequences, and accumulation.*
+*Build your repo empire. One recovery at a time.*
